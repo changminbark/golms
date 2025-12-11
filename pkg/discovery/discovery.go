@@ -1,36 +1,57 @@
 package discovery
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
+	"slices"
 
 	"github.com/changminbark/golms/pkg/constants"
 )
 
-func ListAllLLMs() ([]string, error) {
-	// Read ~/LLMs/ directory
-	var llmPath string
+func ListAllLLMs() (map[string][]string, error) {
+	// Read ~/golms/ directory
+	var golmsPath string
 	if homePath, err := os.UserHomeDir(); err != nil {
 		return nil, err
 	} else {
-		llmPath = path.Join(homePath, "LLMs")
+		golmsPath = path.Join(homePath, "golms")
 	}
 
-	llmList, err := os.ReadDir(llmPath)
+	// Extract all model server subdirectories 
+	modelServerList, err := os.ReadDir(golmsPath)
 	if err != nil {
 		return nil, err
 	}
 
-	var llmStringList []string
-	for _, llmEntry := range llmList {
-		if llmEntry.IsDir() {
-			llmStringList = append(llmStringList, llmEntry.Name())
+	// Loop through all of the model server subdirectories and add to map
+	llmStringMap := make(map[string][]string) 
+	for _, modelServer := range modelServerList {
+		modelServerName := modelServer.Name()
+		// If there is an invalid model server directory
+		if !slices.Contains(constants.AvailableModelServers, modelServerName) {
+			return nil, errors.New("invalid model server directory under ~/golms/")
+		}
+
+		// Look at available models under model server directory
+		modelServerPath := path.Join(golmsPath, modelServerName)
+		llmList, err := os.ReadDir(modelServerPath)
+		if err != nil {
+			return nil, err
+		}
+
+		// Loop through each entry and append to map
+		for _, llmEntry := range llmList {
+			if llmEntry.IsDir() {
+				llmStringMap[modelServerName] = append(llmStringMap[modelServerName], llmEntry.Name())
+			}
 		}
 	}
+	
 
-	return llmStringList, err
+	return llmStringMap, nil
 }
 
 func ListAllModelServers() ([]string, error) {

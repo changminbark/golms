@@ -25,34 +25,52 @@ func NewCLI() *cobra.Command {
 		},
 	}
 
+	// Create list command that lists available LLMs and model servers
 	listCmd := &cobra.Command {
 		Use: "list",
 		Short: "List all available LLMs and model servers",
 		RunE: listHandler,
 	}
 
-	rootCmd.AddCommand(listCmd)
+	// Create servers command that lists support model servers
+	serversCmd := &cobra.Command {
+		Use: "servers",
+		Short: "List all supported model servers",
+		Run: serversHandler,
+	}
+
+	// 
+
+	// Add subcommands to root command
+	rootCmd.AddCommand(listCmd, serversCmd)
 
 	return rootCmd
 }
 
+// ==================== Command Handlers ====================
 func listHandler(cmd *cobra.Command, args []string) error {
 	// Get list of all LLMs
-	llmList, err := discovery.ListAllLLMs()
+	llmListMap, err := discovery.ListAllLLMs()
 	if err != nil {
 		fmt.Printf("Error encountered while listing LLMS: %v", err)
 		return err
 	}
-	if len(llmList) == 0 {
-		fmt.Print("You have no LLMs available in the ~/LLMs directory. \nMake sure to download them as folders with model weights.")
-		return errors.New("no LLMs found")
+	if len(llmListMap) == 0 {
+		fmt.Print("You have no model server directories available in the ~/golms directory. \nMake sure to download them as folders with model weights.")
+		return errors.New("no model server directories found")
 	}
 
 	// Print available LLMs
 	fmt.Print("You have the following LLMs available:\n")
-	for _, llm := range(llmList) {
-		fmt.Printf("- %s\n", llm)
+	for modelServer, llmList := range llmListMap {
+		fmt.Printf("- %s:\n", modelServer)
+		for _, llm := range llmList {
+			fmt.Printf("  - %s\n", llm)
+		}	
 	}
+
+	// Spacing
+	fmt.Println()
 
 	// Get list of all model servers
 	modelServerList, err := discovery.ListAllModelServers()
@@ -75,4 +93,11 @@ func listHandler(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func serversHandler(cmd *cobra.Command, args []string) {
+	fmt.Print("The following model servers are supported:\n")
+	for _, modelServer := range constants.AvailableModelServers {
+		fmt.Printf("- %s\n", modelServer)
+	}
 }

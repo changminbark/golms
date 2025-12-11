@@ -1,2 +1,5 @@
 # Offline development
 vendor/
+
+# Binaries
+golms
