@@ -1,4 +1,11 @@
 # golms
+
+## Prerequisites
+Make sure to have the following:
+- go
+- LLM models downloaded in a directory ~/LLMs
+- Model Servers downloaded
+
 ### Default: Uses cache, ignores vendor/
 ```go
 go build
