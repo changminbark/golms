@@ -19,9 +19,9 @@ import (
 func NewCLI() *cobra.Command {
 	// Create root command where user types golms
 	rootCmd := &cobra.Command{
-		Use: "golms",
-		Short: "Local Model Server Interface written in Go",
-		SilenceUsage: true,
+		Use:           "golms",
+		Short:         "Local Model Server Interface written in Go",
+		SilenceUsage:  true,
 		SilenceErrors: true,
 		CompletionOptions: cobra.CompletionOptions{
 			DisableDefaultCmd: true,
@@ -32,24 +32,24 @@ func NewCLI() *cobra.Command {
 	}
 
 	// Create list command that lists available LLMs and model servers
-	listCmd := &cobra.Command {
-		Use: "list",
+	listCmd := &cobra.Command{
+		Use:   "list",
 		Short: "List all available LLMs and model servers",
-		RunE: listHandler,
+		RunE:  listHandler,
 	}
 
 	// Create servers command that lists support model servers
-	serversCmd := &cobra.Command {
-		Use: "servers",
+	serversCmd := &cobra.Command{
+		Use:   "servers",
 		Short: "List all supported model servers",
-		Run: serversHandler,
+		Run:   serversHandler,
 	}
 
 	// Create connect command that will connect to model server and LLM
-	connectCmd := &cobra.Command {
-		Use: "connect",
+	connectCmd := &cobra.Command{
+		Use:   "connect",
 		Short: "Connect to a model server and LLM",
-		RunE: connectHandler,
+		RunE:  connectHandler,
 	}
 
 	// Add subcommands to root command
@@ -77,7 +77,7 @@ func listHandler(cmd *cobra.Command, args []string) error {
 		fmt.Printf("- %s:\n", modelServer)
 		for _, llm := range llmList {
 			fmt.Printf("  - %s\n", llm)
-		}	
+		}
 	}
 
 	// Spacing
@@ -91,7 +91,7 @@ func listHandler(cmd *cobra.Command, args []string) error {
 	}
 	if len(modelServerList) == 0 {
 		fmt.Print("You have no model servers available. \nMake sure to download the following supported models:\n")
-		for _, modelServer := range(constants.AvailableModelServers) {
+		for _, modelServer := range constants.AvailableModelServers {
 			fmt.Printf("- %s\n", modelServer)
 		}
 		return errors.New("no model servers found")
@@ -99,7 +99,7 @@ func listHandler(cmd *cobra.Command, args []string) error {
 
 	// Print available model servers
 	fmt.Print("You have the following model servers available:\n")
-	for _, modelServer := range(modelServerList) {
+	for _, modelServer := range modelServerList {
 		fmt.Printf("- %s\n", modelServer)
 	}
 
@@ -129,7 +129,7 @@ func connectHandler(cmd *cobra.Command, args []string) error {
 	}
 	if len(modelServerList) == 0 {
 		fmt.Print("You have no model servers available. \nMake sure to download the following supported models:\n")
-		for _, modelServer := range(constants.AvailableModelServers) {
+		for _, modelServer := range constants.AvailableModelServers {
 			fmt.Printf("- %s\n", modelServer)
 		}
 		return errors.New("no model servers found")
@@ -137,7 +137,7 @@ func connectHandler(cmd *cobra.Command, args []string) error {
 
 	// Let user choose a model server
 	fmt.Print("Choose one of the model servers you have available (type just the number):\n")
-	for idx, modelServer := range(modelServerList) {
+	for idx, modelServer := range modelServerList {
 		modelServerMap[idx] = modelServer
 		fmt.Printf("%d. %s\n", idx, modelServer)
 	}
@@ -153,7 +153,7 @@ func connectHandler(cmd *cobra.Command, args []string) error {
 		fmt.Printf("The following input number is not valid: %d\n", inputNum)
 		return errors.New("invalid input number")
 	}
-	
+
 	// Get following LLMs for that model server
 	llmListMap, err := discovery.ListAllLLMs()
 	if err != nil {
@@ -179,7 +179,7 @@ func connectHandler(cmd *cobra.Command, args []string) error {
 	for idx, llm := range llmList {
 		llmMap[idx] = llm
 		fmt.Printf("%d. %s\n", idx, llm)
-	}	
+	}
 	input, _ = reader.ReadString('\n')
 	input = strings.TrimSpace(input)
 	inputNum, err = strconv.Atoi(input)
@@ -215,7 +215,7 @@ func connectHandler(cmd *cobra.Command, args []string) error {
 
 	// Create client to communicate with model server
 	modelServerClient := client.NewClient(selectedModelServer, selectedLLM, constants.Localhost, port, reader)
-	
+
 	// Start chat
 	err = modelServerClient.StartChat()
 	if err != nil {

@@ -15,11 +15,11 @@ import (
 )
 
 type MlxLMClient struct {
-	llm string
-	host string
-	port int
+	llm         string
+	host        string
+	port        int
 	chatOptions ChatOptions
-	reader *bufio.Reader
+	reader      *bufio.Reader
 }
 
 func (c MlxLMClient) StartChat() error {
@@ -31,10 +31,10 @@ func (c MlxLMClient) StartChat() error {
 
 	// Create initial chat request
 	chatReq := &ChatRequest{
-		Messages: []Message{},
+		Messages:    []Message{},
 		Temperature: c.chatOptions.Temperature,
-		MaxTokens: c.chatOptions.MaxTokens,
-		Stream: c.chatOptions.Stream,
+		MaxTokens:   c.chatOptions.MaxTokens,
+		Stream:      c.chatOptions.Stream,
 	}
 
 	// Create infinite loop for chat
@@ -63,12 +63,12 @@ func (c MlxLMClient) StartChat() error {
 
 func (c *MlxLMClient) setChatOptions() {
 	fmt.Println("\n=== Chat Options Setup ===")
-	
+
 	// Set Temperature
 	fmt.Print("Enter temperature (0.0-2.0, default 0.7): ")
 	tempInput, _ := c.reader.ReadString('\n')
 	tempInput = strings.TrimSpace(tempInput)
-	
+
 	if tempInput == "" {
 		c.chatOptions.Temperature = 0.7
 	} else {
@@ -80,12 +80,12 @@ func (c *MlxLMClient) setChatOptions() {
 			c.chatOptions.Temperature = temp
 		}
 	}
-	
+
 	// Set MaxTokens
 	fmt.Print("Enter max tokens (default 512): ")
 	tokensInput, _ := c.reader.ReadString('\n')
 	tokensInput = strings.TrimSpace(tokensInput)
-	
+
 	if tokensInput == "" {
 		c.chatOptions.MaxTokens = 512
 	} else {
@@ -97,14 +97,14 @@ func (c *MlxLMClient) setChatOptions() {
 			c.chatOptions.MaxTokens = tokens
 		}
 	}
-	
+
 	// Set Stream
 	fmt.Print("Enable streaming? (y/n, default n): ")
 	streamInput, _ := c.reader.ReadString('\n')
 	streamInput = strings.TrimSpace(strings.ToLower(streamInput))
-	
+
 	c.chatOptions.Stream = (streamInput == "y" || streamInput == "yes")
-	
+
 	fmt.Println("\n=== Options Set ===")
 	fmt.Printf("Temperature: %.2f\n", c.chatOptions.Temperature)
 	fmt.Printf("Max Tokens: %d\n", c.chatOptions.MaxTokens)
@@ -128,8 +128,8 @@ func (c *MlxLMClient) addUserMessage(req *ChatRequest) error {
 
 	// Create user message
 	userMessage := &Message{
-		Role: "user",
-		Content: userInput,
+		Role:      "user",
+		Content:   userInput,
 		ToolCalls: nil,
 	}
 

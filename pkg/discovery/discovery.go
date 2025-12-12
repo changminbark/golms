@@ -20,14 +20,14 @@ func ListAllLLMs() (map[string][]string, error) {
 		golmsPath = path.Join(homePath, "golms")
 	}
 
-	// Extract all model server subdirectories 
+	// Extract all model server subdirectories
 	modelServerList, err := os.ReadDir(golmsPath)
 	if err != nil {
 		return nil, err
 	}
 
 	// Loop through all of the model server subdirectories and add to map
-	llmStringMap := make(map[string][]string) 
+	llmStringMap := make(map[string][]string)
 	for _, modelServer := range modelServerList {
 		modelServerName := modelServer.Name()
 		// If there is an invalid model server directory
