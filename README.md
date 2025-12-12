@@ -6,7 +6,7 @@ A Local Model Server Interface written in Go for managing and interacting with L
 
 `golms` is a CLI tool that provides a unified interface for managing and chatting with local LLM models across different model servers. It currently supports:
 - **MLX LM** - Apple Silicon optimized model server
-- **Ollama** - Cross-platform model server
+- **Ollama** - Cross-platform model server (WIP)
 
 ## Features
 
