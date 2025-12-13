@@ -13,7 +13,8 @@ A Local Model Server Interface written in Go for managing and interacting with L
 - 📋 List available LLMs and model servers
 - 🔌 Connect to model servers and chat with LLMs
 - 🎯 Automatic model server discovery and management
-- 💬 Interactive chat interface
+- 💬 Interactive chat interface with styled TUI
+- 🎨 Beautiful terminal UI with color-coded messages and status indicators
 - 🚀 Support for multiple model server backends
 
 ## Prerequisites
@@ -113,6 +114,8 @@ golms/
 │   │   ├── manager.go
 │   │   ├── mlx_lm.go
 │   │   └── ollama.go
+│   ├── ui/                  # Terminal UI styles and formatting
+│   │   └── styles.go
 │   └── utils/               # Utility functions
 │       ├── clean.go
 │       └── clean_test.go

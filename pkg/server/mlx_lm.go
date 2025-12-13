@@ -14,6 +14,7 @@ import (
 
 	"github.com/changminbark/golms/pkg/constants"
 	"github.com/changminbark/golms/pkg/discovery"
+	"github.com/changminbark/golms/pkg/ui"
 )
 
 type MlxLMServerManager struct {
@@ -31,7 +32,6 @@ func (m MlxLMServerManager) IsRunning() (bool, int) {
 	cmd := exec.Command("pgrep", "python")
 	pgrepPython, err := cmd.Output()
 	if err != nil {
-		fmt.Print("Pgrep on python encountered an error\n")
 		return false, -1
 	}
 	pgrepPythonString := string(pgrepPython)
@@ -61,8 +61,6 @@ func (m MlxLMServerManager) IsRunning() (bool, int) {
 }
 
 func (m *MlxLMServerManager) Start() error {
-	fmt.Print("Starting the mlx_lm model server\n")
-
 	// Build model path
 	var modelPath string
 	if homePath, err := os.UserHomeDir(); err != nil {
@@ -95,14 +93,13 @@ func (m *MlxLMServerManager) Start() error {
 		return fmt.Errorf("failed to start mlx_lm.server: %w", err)
 	}
 
-	fmt.Printf("mlx_lm.server started with PID: %d\n", cmd.Process.Pid)
-	fmt.Println("Logs: /tmp/mlx_lm_server.log")
+	fmt.Println(ui.SubtleStyle.Render(fmt.Sprintf("Server started with PID: %d", cmd.Process.Pid)))
+	fmt.Println(ui.SubtleStyle.Render("Logs: /tmp/mlx_lm_server.log"))
 
 	// Wait for server to start listening on the port
-	fmt.Print("Waiting for server to initialize")
+	fmt.Print(ui.SubtleStyle.Render("Waiting for server to initialize"))
 	for i := 0; i < 30; i++ {
 		time.Sleep(1 * time.Second)
-		fmt.Print(".")
 
 		// Check if server is listening on the port
 		running, pid := m.IsRunning()
@@ -112,20 +109,19 @@ func (m *MlxLMServerManager) Start() error {
 			if output, err := checkCmd.Output(); err == nil && len(output) > 0 {
 				// Port is listening
 				fmt.Println()
-				fmt.Printf("Server is listening on port %d\n", m.port)
+				fmt.Println(ui.FormatSuccess(fmt.Sprintf("Server is listening on port %d", m.port)))
 				return nil
 			}
 		}
 	}
 	fmt.Println()
-	fmt.Println("Warning: Server process started but may not be listening yet. Check logs at /tmp/mlx_lm_server.log")
+	fmt.Println(ui.FormatWarning("Server process started but may not be listening yet"))
+	fmt.Println(ui.SubtleStyle.Render("Check logs at /tmp/mlx_lm_server.log"))
 
 	return nil
 }
 
 func (m *MlxLMServerManager) Stop() error {
-	fmt.Print("Stopping the mlx_lm model server\n")
-
 	// Check if running
 	isRunning, pid := m.IsRunning()
 	if !isRunning {

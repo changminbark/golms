@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/changminbark/golms/pkg/ui"
 	"github.com/changminbark/golms/pkg/utils"
 )
 
@@ -26,8 +27,12 @@ func (c MlxLMClient) StartChat() error {
 	// Set Chat Options
 	c.setChatOptions()
 
-	fmt.Printf("\n\n======== STARTING CHAT CLIENT WITH mlx_lm model server (%s) ========\n\n", c.llm)
-	fmt.Print("Type '/exit' to quit the chat\n\n")
+	// Display chat header with styled box
+	header := fmt.Sprintf("Chat Session: %s", c.llm)
+	fmt.Println(ui.FormatInfoBox(header))
+	fmt.Println(ui.SubtleStyle.Render("Type '/exit' to quit the chat"))
+	fmt.Println(ui.FormatDivider())
+	fmt.Println()
 
 	// Create initial chat request
 	chatReq := &ChatRequest{
@@ -43,7 +48,7 @@ func (c MlxLMClient) StartChat() error {
 		err := c.addUserMessage(chatReq)
 		if err != nil {
 			if errors.Is(err, ErrExitRequested) {
-				fmt.Println("\nExiting chat. Goodbye!")
+				fmt.Println(ui.SubtleStyle.Render("\nExiting chat. Goodbye!"))
 				return nil
 			}
 			return err
@@ -52,20 +57,23 @@ func (c MlxLMClient) StartChat() error {
 		// Send chat request to model server
 		resp, err := c.sendChatReq(chatReq)
 		if err != nil {
+			fmt.Println(ui.FormatError(fmt.Sprintf("Failed to get response: %v", err)))
 			return err
 		}
 
 		// Clean and display chat response
 		cleanedContent := utils.RemoveThinkTags(resp.Choices[0].Message.Content)
-		fmt.Printf("LLM(%s): %s\n\n", c.llm, cleanedContent)
+		fmt.Println(ui.FormatAIMessage(c.llm, cleanedContent))
 	}
 }
 
 func (c *MlxLMClient) setChatOptions() {
-	fmt.Println("\n=== Chat Options Setup ===")
+	fmt.Println(ui.HeaderStyle.Render("Chat Options Setup"))
+	fmt.Println(ui.SubtleStyle.Render("Configure parameters for the model"))
+	fmt.Println()
 
 	// Set Temperature
-	fmt.Print("Enter temperature (0.0-2.0, default 0.7): ")
+	fmt.Print(ui.PromptStyle.Render("Temperature") + " (0.0-2.0, default 0.7): ")
 	tempInput, _ := c.reader.ReadString('\n')
 	tempInput = strings.TrimSpace(tempInput)
 
@@ -74,7 +82,7 @@ func (c *MlxLMClient) setChatOptions() {
 	} else {
 		temp, err := strconv.ParseFloat(tempInput, 64)
 		if err != nil || temp < 0 || temp > 2.0 {
-			fmt.Println("Invalid temperature, using default 0.7")
+			fmt.Println(ui.FormatWarning("Invalid temperature, using default 0.7"))
 			c.chatOptions.Temperature = 0.7
 		} else {
 			c.chatOptions.Temperature = temp
@@ -82,7 +90,7 @@ func (c *MlxLMClient) setChatOptions() {
 	}
 
 	// Set MaxTokens
-	fmt.Print("Enter max tokens (default 512): ")
+	fmt.Print(ui.PromptStyle.Render("Max Tokens") + " (default 512): ")
 	tokensInput, _ := c.reader.ReadString('\n')
 	tokensInput = strings.TrimSpace(tokensInput)
 
@@ -91,7 +99,7 @@ func (c *MlxLMClient) setChatOptions() {
 	} else {
 		tokens, err := strconv.Atoi(tokensInput)
 		if err != nil || tokens < 1 {
-			fmt.Println("Invalid max tokens, using default 512")
+			fmt.Println(ui.FormatWarning("Invalid max tokens, using default 512"))
 			c.chatOptions.MaxTokens = 512
 		} else {
 			c.chatOptions.MaxTokens = tokens
@@ -99,22 +107,24 @@ func (c *MlxLMClient) setChatOptions() {
 	}
 
 	// Set Stream
-	fmt.Print("Enable streaming? (y/n, default n): ")
+	fmt.Print(ui.PromptStyle.Render("Enable Streaming?") + " (y/n, default n): ")
 	streamInput, _ := c.reader.ReadString('\n')
 	streamInput = strings.TrimSpace(strings.ToLower(streamInput))
 
 	c.chatOptions.Stream = (streamInput == "y" || streamInput == "yes")
 
-	fmt.Println("\n=== Options Set ===")
-	fmt.Printf("Temperature: %.2f\n", c.chatOptions.Temperature)
-	fmt.Printf("Max Tokens: %d\n", c.chatOptions.MaxTokens)
-	fmt.Printf("Streaming: %v\n", c.chatOptions.Stream)
+	// Display configured options in a box
 	fmt.Println()
+	optionsInfo := fmt.Sprintf("Temperature: %.2f\nMax Tokens: %d\nStreaming: %v",
+		c.chatOptions.Temperature, c.chatOptions.MaxTokens, c.chatOptions.Stream)
+	fmt.Println(ui.FormatInfoBox(optionsInfo))
+	fmt.Println()
+	fmt.Println(ui.FormatDivider())
 }
 
 func (c *MlxLMClient) addUserMessage(req *ChatRequest) error {
-	// Ask user for input
-	fmt.Print("User: ")
+	// Ask user for input with styled prompt
+	fmt.Print(ui.UserStyle.Render("You: "))
 	userInput, err := c.reader.ReadString('\n')
 	if err != nil {
 		return fmt.Errorf("failed to read user input: %w", err)
