@@ -6,28 +6,19 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/changminbark/golms/pkg/constants"
-	"github.com/changminbark/golms/pkg/discovery"
 	"github.com/changminbark/golms/pkg/ui"
 )
 
 type MlxLMServerManager struct {
-	llm  string
-	port int // Port the server is running on
+	BaseModelServerManager
 }
 
-func (m MlxLMServerManager) IsAvailable() bool {
-	modelServerList, _ := discovery.ListAllModelServers()
-	return slices.Contains(modelServerList, constants.Mlx_lm)
-}
-
-func (m MlxLMServerManager) IsRunning() (bool, int) {
+func (m *MlxLMServerManager) IsRunning() (bool, int) {
 	// Check if python processes are running
 	cmd := exec.Command("pgrep", "python")
 	pgrepPython, err := cmd.Output()
@@ -137,34 +128,5 @@ func (m *MlxLMServerManager) Stop() error {
 }
 
 func (m *MlxLMServerManager) GetPort() (int, error) {
-	// Check if running
-	isRunning, pid := m.IsRunning()
-	if !isRunning {
-		return -1, errors.New("mlx_lm.server is not running")
-	}
-
-	// If we started the server and know the port, return it
-	if m.port > 0 {
-		return m.port, nil
-	}
-
-	// Otherwise, try to detect the port using lsof (for externally started servers)
-	cmd := exec.Command("lsof", "-Pan", "-p", strconv.Itoa(pid), "-i")
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return -1, fmt.Errorf("failed to get port info: %w (try running: lsof -Pan -p %d -i)", err, pid)
-	}
-
-	// Parse port number from output
-	re := regexp.MustCompile(`:(\d+)\s+\(LISTEN\)`)
-	matches := re.FindStringSubmatch(string(output))
-	if len(matches) < 2 {
-		return -1, errors.New("no listening port found in lsof output")
-	}
-	port, err := strconv.Atoi(matches[1]) // This is the first group in regex match (\d+)
-	if err != nil {
-		return -1, fmt.Errorf("failed to parse port number: %w", err)
-	}
-
-	return port, nil
+	return getPortHelper(m, m.port)
 }
