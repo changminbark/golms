@@ -1,6 +1,6 @@
 # golms
 
-A Local Model Server Interface written in Go for managing and interacting with LLM model servers. This was initially built as a challenge for myself to code a useful tool in Go during a 6-hour flight with limited internet access.
+A Local Model Server Interface written in Go for managing and interacting with LLM model servers. This was initially built as a challenge for myself to code a useful tool in Go during a 6-hour flight with limited internet access (Chang Min).
 
 ## Overview
 
